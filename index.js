@@ -35,13 +35,13 @@ var plugins = [
 var env = process.env.BABEL_ENV || process.env.NODE_ENV;
 
 if (env === 'development' || env === 'test') {
-  plugins.push([
+  plugins.push(
     // 👇 adds __self={this} to JSX elements (used in development mode to generate runtime warnings)
     require('babel-plugin-transform-react-jsx-self'),
 
     // 👇 adds __source={{ fileName, lineNumber }} to JSX elements
     require('babel-plugin-transform-react-jsx-source')
-  ]);
+  );
 }
 
 module.exports = {
