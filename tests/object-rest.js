@@ -1,0 +1,1 @@
+const { prop, ...rest } = props;
