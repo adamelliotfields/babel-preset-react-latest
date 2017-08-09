@@ -1,49 +1,80 @@
 'use strict';
 
-var plugins = [
-  // ES7
-  // 👇 compiles ES7 exponentiation operator to Math.pow
-  require('babel-plugin-transform-exponentiation-operator'),
+exports.__esModule = true;
 
-  // ES8
-  // 👇 compiles ES8 async functions to ES6 generators
-  require('babel-plugin-transform-async-to-generator'),
-
-  // Stage 3
-  // 👇 transforms async generator functions and for...await statements to ES6 generators
-  require('babel-plugin-transform-async-generator-functions'),
-
-  // 👇 transforms rest properties for object destructuring assignment and spread properties for object literals
-  require('babel-plugin-transform-object-rest-spread'),
-
-  // Stage 2
-  // 👇 transforms class property initializers
-  require('babel-plugin-transform-class-properties'),
-
-  // 👇 compiles class and object decorators to ES5
-  require('babel-plugin-transform-decorators'),
-
-  // React
-  // 👇 transforms JSX to React.createElement function calls
-  require('babel-plugin-transform-react-jsx'),
-
-  // 👇 allows parsing of JSX syntax
-  require('babel-plugin-syntax-jsx')
-];
-
-// The following two plugins are currently necessary to make React warnings include more valuable information.
 var env = process.env.BABEL_ENV || process.env.NODE_ENV;
 
+// babel-helpers function
+// fixes "Falsy value found in plugins" error
+var interopRequireDefault = function (obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+};
+
+var babelPluginTransformReactJSX = interopRequireDefault(require('babel-plugin-transform-react-jsx')).default;
+var babelPluginTransformExponentiationOperator = interopRequireDefault(require('babel-plugin-transform-exponentiation-operator')).default;
+var babelPluginTransformAsyncToGenerator = interopRequireDefault(require('babel-plugin-transform-async-to-generator')).default;
+var babelPluginTransformAsyncGeneratorFunctions = interopRequireDefault(require('babel-plugin-transform-async-generator-functions')).default;
+var babelPluginTransformObjectRestSpread = interopRequireDefault(require('babel-plugin-transform-object-rest-spread')).default;
+var babelPluginTransformDecoratorsLegacy = interopRequireDefault(require('babel-plugin-transform-decorators-legacy')).default;
+var babelPluginTransformClassProperties = interopRequireDefault(require('babel-plugin-transform-class-properties')).default;
+var babelPluginTransformReactJSXSelf = interopRequireDefault(require('babel-plugin-transform-react-jsx-self')).default;
+var babelPluginTransformReactJSXSource = interopRequireDefault(require('babel-plugin-transform-react-jsx-source')).default;
+
+// Babel plugins are evaluated first-to-last
+var plugins = [
+  // React
+  // transforms JSX to React.createElement function calls
+  // plugin includes syntax-jsx
+  [
+    babelPluginTransformReactJSX,
+    // when spreading props, use Object.assign directly instead of Babel’s extend helper
+    // requires Object.assign to be available globally
+    { useBuiltIns: true }
+  ],
+
+  // Stage 2
+  // compiles class and object decorators to ES5
+  // note: Babel 6 dropped support for decorators, so the legacy plugin must be used
+  // important: this must come before the transform-class-properties plugin
+  babelPluginTransformDecoratorsLegacy,
+
+  // transforms class property initializers
+  babelPluginTransformClassProperties,
+
+  // Stage 3
+  // transforms async generator functions and for...await statements to ES6 generators
+  babelPluginTransformAsyncGeneratorFunctions,
+
+  // transforms rest properties for object destructuring assignment and spread properties for object literals
+  [
+    babelPluginTransformObjectRestSpread,
+    // when spreading props, use Object.assign directly instead of Babel’s extend helper
+    // requires Object.assign to be available globally
+    { useBuiltIns: true }
+  ],
+
+  // ES8
+  // compiles ES8 async functions to ES6 generators
+  babelPluginTransformAsyncToGenerator,
+
+  // ES7
+  // compiles ES7 exponentiation operator to Math.pow
+  babelPluginTransformExponentiationOperator
+];
+
+// The following two plugins are currently necessary to make React warnings include more valuable information
 if (env === 'development' || env === 'test') {
   plugins.push(
-    // 👇 adds __self={this} to JSX elements (used in development mode to generate runtime warnings)
-    require('babel-plugin-transform-react-jsx-self'),
+    // adds __self={this} to JSX elements (used in development mode to generate runtime warnings)
+    babelPluginTransformReactJSXSelf,
 
-    // 👇 adds __source={{ fileName, lineNumber }} to JSX elements
-    require('babel-plugin-transform-react-jsx-source')
+    // adds __source={{ fileName, lineNumber }} to JSX elements
+    babelPluginTransformReactJSXSource
   );
 }
 
-module.exports = {
+exports.default = {
   plugins: plugins
 };
+
+module.exports = exports['default'];
