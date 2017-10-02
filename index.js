@@ -17,6 +17,7 @@ var babelPluginTransformAsyncGeneratorFunctions = interopRequireDefault(require(
 var babelPluginTransformObjectRestSpread = interopRequireDefault(require('babel-plugin-transform-object-rest-spread')).default;
 var babelPluginTransformDecoratorsLegacy = interopRequireDefault(require('babel-plugin-transform-decorators-legacy')).default;
 var babelPluginTransformClassProperties = interopRequireDefault(require('babel-plugin-transform-class-properties')).default;
+var babelPluginTransformES2015Classes = interopRequireDefault(require('babel-plugin-transform-es2015-classes')).default;
 var babelPluginTransformReactJSXSelf = interopRequireDefault(require('babel-plugin-transform-react-jsx-self')).default;
 var babelPluginTransformReactJSXSource = interopRequireDefault(require('babel-plugin-transform-react-jsx-source')).default;
 
@@ -41,6 +42,11 @@ var plugins = [
   // transforms class property initializers
   babelPluginTransformClassProperties,
 
+  // transforms ES6 classes to ES5
+  // required for react-hot-loader to work
+  // https://github.com/gaearon/react-hot-loader/issues/313
+  babelPluginTransformES2015Classes,
+
   // Stage 3
   // transforms async generator functions and for...await statements to ES6 generators
   babelPluginTransformAsyncGeneratorFunctions,
@@ -63,7 +69,7 @@ var plugins = [
 ];
 
 // The following two plugins are currently necessary to make React warnings include more valuable information
-if (env === 'development' || env === 'test') {
+if (env === undefined || env === 'development' || env === 'test') {
   plugins.push(
     // adds __self={this} to JSX elements (used in development mode to generate runtime warnings)
     babelPluginTransformReactJSXSelf,
